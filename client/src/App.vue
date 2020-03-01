@@ -1,28 +1,74 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div v-if="currentQuestion" class="current-question">
+      <img :src="currentQuestion.questionImage" />
+      <p>{{currentQuestion.question}}</p>
+      <div>
+        <button
+          v-for="option in currentQuestion.options"
+          :key="option"
+          @click="guess(option)"
+        >
+          {{option}}
+        </button>
+      </div>
+    </div>
+    <button @click="nextQuestion()">Next Question</button>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import gql from 'graphql-tag';
 
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+  data: () => ({
+    currentQuestion: null,
+  }),
+  apollo: {
+    questions: gql`query {
+      questions {
+        options
+        question
+        questionImage
+        answer
+        answerDescription
+      }
+    }`,
+  },
+  methods: {
+    nextQuestion() {
+      this.currentQuestion = this.questions[Math.floor(Math.random() * this.questions.length)];
+    },
+    guess(option) {
+      if (this.currentQuestion.answer === option) {
+        alert('Correct!');
+        this.nextQuestion();
+      } else {
+        alert(`Wrong! Correct answer was ${this.currentQuestion.answer}`);
+        this.nextQuestion();
+      }
+    },
+  },
+};
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+<style >
+.current-question {
+  width: 90%;
+  font-family: sans-serif;
+  font-size: 2rem;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  margin: 1rem;
+}
+
+.current-question img {
+  width: 50%;
+}
+
+button {
+  display: block;
+  width: 100%;
+  font-size: 2rem;
+  text-align: center;
 }
 </style>
